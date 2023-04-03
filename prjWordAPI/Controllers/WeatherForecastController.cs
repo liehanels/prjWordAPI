@@ -19,6 +19,15 @@ namespace prjWordAPI.Controllers
             _logger = logger;
         }
 
+        //db/url class init
+        dbControl dbc = new dbControl();
+        //getReece method to start db class process
+        [HttpGet("GetReece")]
+        public void Getreece()
+        {
+            //get method
+            dbc.getURL();
+        }
         [HttpGet("GetSingle")]
         public String Getsingle(String Lang)
         {
