@@ -26,7 +26,7 @@ namespace prjWordAPI.Controllers
         public void Getreece()
         {
             //get method
-            dbc.getURL();
+            dbc.urlRequest();
         }
         [HttpGet("GetSingle")]
         public String Getsingle(String Lang)
