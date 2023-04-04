@@ -14,8 +14,7 @@ namespace prjWordAPI
         private List<string> afrL = new List<string>();
         private List<string> engL = new List<string>();
         private List<string> xhoL = new List<string>();
-        private string connString = "";
-        private SqlConnection sqlCon;
+        private const string connString = "Server=tcp:liehan-db.database.windows.net,1433;Initial Catalog=liehan-database;Persist Security Info=False;User ID=liehanels;Password=St10085345;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
         private dbObject obj;
 
         //get Reece's URL responseFromServer off the website
@@ -60,12 +59,36 @@ namespace prjWordAPI
             Console.WriteLine("\nurlRquest() process has completed its actions successfully\n");
         }
         //methods to make life easier
-        public void insertToDB(dbObject obj)
+        public string insertToDB(int c)
         {
-            connString = "";
-            sqlCon = new SqlConnection(connString);
-            sqlCon.Open();
-
+            string msg = "";
+            SqlConnection sqlCon;
+            try
+            {
+                using (sqlCon = new SqlConnection(connString))
+                {
+                    sqlCon.Open();
+                    msg = ("\nConnection opened successfully\n");
+                    SqlCommand sqlCom;
+                    SqlDataAdapter adapter = new SqlDataAdapter();
+                    string sql = "INSERT INTO liehan-database (" + dbObjects[c].First_Name + "," + dbObjects[c].Last_Name + "," + dbObjects[c].Password_Hash + "," + dbObjects[c].Image_URL;
+                    using (sqlCom = new SqlCommand(sql, sqlCon))
+                    {
+                        using (adapter.InsertCommand = new SqlCommand(sql, sqlCon))
+                        {
+                            adapter.InsertCommand.ExecuteNonQuery();
+                            sqlCom.Dispose();
+                            sqlCon.Close();
+                        }
+                    }
+                }
+                msg =  ("\nObject " + c + " added successfully\n");
+            }
+            catch (Exception e)
+            {
+                msg = "\nError : \n" + e + "\n";
+            }
+            return msg;
         }
         public string URL_Link(int option)
         {
@@ -96,6 +119,8 @@ namespace prjWordAPI
                 string imgURL = (temp[2].Substring(temp[2].IndexOf(':') + 1)).Trim();
                 //adds each object to array
                 dbObjects.Add(createDB_Oject(fname, lname, password, imgURL));
+                //adds to database ?
+                Console.WriteLine(insertToDB(c));
                 // i wanna see if it works
                 Console.WriteLine("Record : " + c + " ->" + dbObjects[c].First_Name + "->" + dbObjects[c].Last_Name + "->" + dbObjects[c].Password_Hash + "->" + dbObjects[c].Image_URL);
                 c++;
