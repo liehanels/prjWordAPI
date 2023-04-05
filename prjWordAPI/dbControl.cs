@@ -40,7 +40,7 @@ namespace prjWordAPI
                     string responseFromServer = reader.ReadToEnd();
                     //writes the raw response to console screen for visual verification/error checking
                     Console.WriteLine("Raw response from server\n\n" + responseFromServer + "\n\n-------------<end of raw response>--------------\n");
-                    /* performing a series of (temporarily bad) string operations to split the raw response >> useful data and information
+                    /* performing a series of string operations to split the raw response >> useful data and information
                      * raw data looks like >> [{"Name":"Chris Martin","Password":"football","imageURL":"https:\/\/picsum.photos\/200\/300"},{"Name":.../200\/300"},{...}...]
                      */
                     responseFromServer = processRawInput(responseFromServer);
@@ -69,18 +69,20 @@ namespace prjWordAPI
                 {
                     sqlCon.Open();
                     msg = ("\nConnection opened successfully\n");
+                    Console.WriteLine(msg);
                     SqlCommand sqlCom;
                     SqlDataAdapter adapter = new SqlDataAdapter();
-                    string sql = "INSERT INTO liehan-database (" + dbObjects[c].First_Name + "," + dbObjects[c].Last_Name + "," + dbObjects[c].Password_Hash + "," + dbObjects[c].Image_URL;
+                    string sql = "INSERT INTO users_tbl (First_Name, Last_Name, Password_Hash, Image_URL) VALUES('" + dbObjects[c].First_Name + "','" + dbObjects[c].Last_Name + "','" + dbObjects[c].Password_Hash + "','" + dbObjects[c].Image_URL + "')";
                     using (sqlCom = new SqlCommand(sql, sqlCon))
                     {
+                        Console.WriteLine("\nSQL : " + sql + "\n");
                         using (adapter.InsertCommand = new SqlCommand(sql, sqlCon))
                         {
                             adapter.InsertCommand.ExecuteNonQuery();
-                            sqlCom.Dispose();
-                            sqlCon.Close();
                         }
+                        sqlCom.Dispose();
                     }
+                    sqlCon.Close();
                 }
                 msg =  ("\nObject " + c + " added successfully\n");
             }
@@ -107,6 +109,7 @@ namespace prjWordAPI
         public void processInformation(String responseFromServer)
         {
             string[] stuffFromServer = responseFromServer.Split(new char[] { '_' });
+            int adj = 9;//change ID here for db issues -.-
             int c = 0;
             while (c < stuffFromServer.Length)
             {
@@ -121,8 +124,6 @@ namespace prjWordAPI
                 dbObjects.Add(createDB_Oject(fname, lname, password, imgURL));
                 //adds to database ?
                 Console.WriteLine(insertToDB(c));
-                // i wanna see if it works
-                Console.WriteLine("Record : " + c + " ->" + dbObjects[c].First_Name + "->" + dbObjects[c].Last_Name + "->" + dbObjects[c].Password_Hash + "->" + dbObjects[c].Image_URL);
                 c++;
             }
             Console.WriteLine("\nprocessInformation(string responseFromServer) has completed its actions successfully\n");
