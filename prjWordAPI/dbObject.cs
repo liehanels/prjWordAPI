@@ -14,5 +14,10 @@
             Password_Hash = password_Hash;
             Image_URL = image_URL;
         }
+        public string summary()
+        {
+            string msg = Last_Name + ", " + First_Name + "\n--> Image : " + Image_URL;
+            return msg;
+        }
     }
 }
