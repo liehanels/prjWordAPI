@@ -6,12 +6,6 @@ namespace prjWordAPI.Controllers
     [Route("[controller]")]
     public class WeatherForecastController : ControllerBase
     {
-        
-        private static readonly string[] Summaries = new[]
-        {
-        "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-    };
-
         private readonly ILogger<WeatherForecastController> _logger;
 
         public WeatherForecastController(ILogger<WeatherForecastController> logger)
@@ -23,31 +17,38 @@ namespace prjWordAPI.Controllers
         public void GetReece()
         {
             dbControl dbc = new dbControl();
-            dbc.getURLintoDB();
+            dbc.urlRequest();
         }
         [HttpGet("GetSingle")]
-        public String Getsingle(String Lang)
+        public String Getsingle(String search)
         {
-            LangFactory langFactory = new LangFactory();
-            ILang English = langFactory.getLang(Lang);
-            word w = word.getInstance();
-            return w.Single(English.getNames());
+            dbControl dbc = new dbControl();
+            return dbc.readFromDB(search);
         }
         [HttpGet("GetAll")]
-        public String[] GetAll(String Lang)
+        public String[] GetAll()
         {
-            LangFactory langFactory = new LangFactory();
-            ILang English = langFactory.getLang(Lang);
-            word w = word.getInstance();
-            return w.All(English.getNames());
+            string[] dbcAr = new string[1000];
+            dbControl dbc = new dbControl();
+            int i = 0;
+            foreach (var item in dbc.readFromDB())
+            {
+                dbcAr[i] = item + "";
+            }
+            return dbcAr;
         }
         [HttpGet("GetSorted")]
-        public String[] GetSorted(String Lang)
+        public String[] GetSorted(String colomn)
         {
-            LangFactory langFactory = new LangFactory();
-            ILang English = langFactory.getLang(Lang);
-            word w = word.getInstance();
-            return w.Sorted(English.getNames());
+            string[] dbcAr = new string[100];
+            dbControl dbc = new dbControl();
+            int i = 0;
+            foreach (var item in dbc.readFromDBSorted(colomn))
+            {
+                dbcAr[i] = item + "";
+                i++;
+            }
+            return dbcAr;
         }
     }
 }

@@ -11,14 +11,14 @@ namespace prjWordAPI
         //declarations
         private List<string> req = new List<string>();
         private List<dbObject> dbObjects = new List<dbObject>();
-        private List<string> afrL = new List<string>();
-        private List<string> engL = new List<string>();
-        private List<string> xhoL = new List<string>();
+        //private List<string> afrL = new List<string>();
+        //private List<string> engL = new List<string>();
+        //private List<string> xhoL = new List<string>();
         private const string connString = "Server=tcp:liehan-db.database.windows.net,1433;Initial Catalog=liehan-database;Persist Security Info=False;User ID=liehanels;Password=St10085345;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
-        private dbObject? obj;
+        private dbObject obj = new dbObject();
 
         //get Reece's URL responseFromServer off the website
-        public void getURLintoDB()
+        public void urlRequest()
         {
             //adds url queries
             addURLRequests();
@@ -39,78 +39,74 @@ namespace prjWordAPI
                     //gets the response from the server as a string
                     string responseFromServer = reader.ReadToEnd();
                     //writes the raw response to console screen for visual verification/error checking
-                    Console.WriteLine("Raw response from server\n\n" + responseFromServer + "\n\n-------------<end of raw response>--------------\n");
-                    /* performing a series of string operations to split the raw response >> useful data and information
+                    Console.WriteLine("Raw response from server\n\n" + responseFromServer + "\n\n" + addBorder((Console.BufferWidth / 2) - 10) + "<end of raw response>" + addBorder((Console.BufferWidth / 2) - 10) + "\n");
+                    /* performing a series of (temporarily bad) string operations to split the raw response >> useful data and information
                      * raw data looks like >> [{"Name":"Chris Martin","Password":"football","imageURL":"https:\/\/picsum.photos\/200\/300"},{"Name":.../200\/300"},{...}...]
-                     *
-                     * responseFromServer = processRawInput(responseFromServer);
-                     *
+                     */
+                    responseFromServer = processRawInput(responseFromServer);
+                    /*
                      * data now looks like >> Name:<>,Password:<>,imageURL:<>_...
                      * writes the modified string to console because i wanted to know what happened to it
                      * now splits each record that i seperated by ' _ ' into an array and then further splits it into an object array
                      */
-                    processInformation(processRawInput(responseFromServer));
+                    processInformation(responseFromServer);
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                Console.WriteLine(ex + addBorder(Console.BufferWidth));
             }
-            Console.WriteLine("\nurlRquest() process has completed its actions successfully\n");
+            Console.WriteLine("\nurlRquest() process has completed its actions successfully\n" + addBorder(Console.BufferWidth));
         }
         //methods to make life easier
-        private string insertToDB(int c)
+        public string insertToDB(int c)
         {
-            string msg;
+            string msg = "";
             SqlConnection sqlCon;
             try
             {
                 using (sqlCon = new SqlConnection(connString))
                 {
                     sqlCon.Open();
-                    msg = "\nConnection opened successfully\n";
-                    Console.WriteLine(msg);
+                    msg = ("\nConnection opened successfully\n" + addBorder(Console.BufferWidth));
                     SqlCommand sqlCom;
                     SqlDataAdapter adapter = new SqlDataAdapter();
-                    string sql = "INSERT INTO users_tbl (First_Name, Last_Name, Password_Hash, Image_URL) VALUES('" + dbObjects[c].First_Name + "','" + dbObjects[c].Last_Name + "','" + dbObjects[c].Password_Hash + "','" + dbObjects[c].Image_URL + "')";
+                    string sql = "INSERT INTO users_tbl values ('" + dbObjects[c].First_Name + "','" + dbObjects[c].Last_Name + "','" + dbObjects[c].Password_Hash + "','" + dbObjects[c].Image_URL + "')";
                     using (sqlCom = new SqlCommand(sql, sqlCon))
                     {
-                        Console.WriteLine("\nSQL : " + sql + "\n");
                         using (adapter.InsertCommand = new SqlCommand(sql, sqlCon))
                         {
                             adapter.InsertCommand.ExecuteNonQuery();
+                            sqlCom.Dispose();
+                            sqlCon.Close();
                         }
-                        sqlCom.Dispose();
-                        Console.WriteLine("sqlCom.Dispose() finished");
                     }
-                    sqlCon.Close();
-                    Console.WriteLine("sqlCon.Close() finished");
                 }
-                msg =  "\nUser " + dbObjects[c].summary() + "\n<<<Added successfully>>>\n";
+                msg =  ("\nRecord : " + dbObjects[c].summary() + "\nHas been added successfully\n" + addBorder(Console.BufferWidth));
             }
             catch (Exception e)
             {
-                msg = "\nError : \n" + e + "\n";
+                msg = "\nError : \n" + e + "\n" + addBorder(Console.BufferWidth);
             }
             return msg;
         }
-        private string URL_Link(int option)
+        public string URL_Link(int option)
         {
             const string url = "https://wordapidata.000webhostapp.com/";
             string link = url + req[option];
             return link;
         }
-        private void addURLRequests()
+        public void addURLRequests()
         {
             req.Add("?getnamesenglish");  //[0]
             req.Add("?getnamesafrikaans");//[1]
             req.Add("?getnamesxhosa");    //[2]
             req.Add("?getuserdb");        //[3]
-            Console.WriteLine("\nurl requests added successfully\n");
+            Console.WriteLine("\nurl requests added successfully\n" + addBorder(Console.BufferWidth));
         }
-        private void processInformation(String processedData)
+        public void processInformation(String responseFromServer)
         {
-            string[] stuffFromServer = processedData.Split(new char[] { '_' });
+            string[] stuffFromServer = responseFromServer.Split(new char[] { '_' });
             int c = 0;
             while (c < stuffFromServer.Length)
             {
@@ -125,11 +121,13 @@ namespace prjWordAPI
                 dbObjects.Add(createDB_Oject(fname, lname, password, imgURL));
                 //adds to database ?
                 Console.WriteLine(insertToDB(c));
+                // i wanna see if it works
+                Console.WriteLine("Record : " + c + " ->" + dbObjects[c].First_Name + "->" + dbObjects[c].Last_Name + "->" + dbObjects[c].Password_Hash + "->" + dbObjects[c].Image_URL + addBorder(Console.BufferWidth));
                 c++;
             }
-            Console.WriteLine("\nprocessInformation(string responseFromServer) has completed its actions successfully\n");
+            Console.WriteLine("\nprocessInformation(string responseFromServer) has completed its actions successfully\n" + addBorder(Console.BufferWidth));
         }
-        private string processRawInput(string rawInput)
+        public string processRawInput(string rawInput)
         {
             rawInput = rawInput.Replace("[", "");
             rawInput = rawInput.Replace("]", "");
@@ -138,16 +136,130 @@ namespace prjWordAPI
             rawInput = rawInput.Replace("}", "");
             rawInput = rawInput.Replace("\"", "");
             rawInput = rawInput.Trim();
-            Console.WriteLine("Modified response from server\n\n" + rawInput + "\n\n-------------<end of mod response>--------------\n");
-            Console.WriteLine("\nprocessRawInput(string rawInput) has completed its actions successfully\n");
+            Console.WriteLine("Modified response from server\n\n" + rawInput + "\n\n" + addBorder((Console.BufferWidth/2) - 10) + "<end of mod response>" + addBorder((Console.BufferWidth / 2) - 10) + "\n");
+            Console.WriteLine("\nprocessRawInput(string rawInput) has completed its actions successfully\n" + addBorder(Console.BufferWidth));
             return rawInput;
 
         }
-        private dbObject createDB_Oject(string fName, string lName, string pass, string imgURL)
+        public string addBorder(int totalSpaces)
+        {
+            string border = "";
+            for (int i = 0; i < totalSpaces; i++)
+            {
+                border = border + "-";
+            }
+            return border;
+        }
+        public dbObject createDB_Oject(string fName, string lName, string pass, string imgURL)
         {
             obj = new dbObject(fName, lName, pass, imgURL);
-            Console.WriteLine("\ncreateDB_Object() has completed its actions successfully\n");
+            Console.WriteLine("\ncreateDB_Object() has completed its actions successfully\n" + addBorder(Console.BufferWidth));
             return obj;
+        }
+        public string readFromDB(string search)
+        {
+            string msg = "";
+            SqlConnection sqlCon;
+            try
+            {
+                using (sqlCon = new SqlConnection(connString))
+                {
+                    sqlCon.Open();
+                    msg = ("\nConnection opened successfully\n" + addBorder(Console.BufferWidth));
+                    SqlCommand sqlCom;
+                    SqlDataReader reader;
+                    string output = "";
+                    string sql = "SELECT * users_tbl WHERE First_Name EQUALS '" + search + "'";
+                    using (sqlCom = new SqlCommand(sql, sqlCon))
+                    {
+                        using (reader = sqlCom.ExecuteReader())
+                        {
+                            while(reader.Read())
+                            {
+                                output = output + reader.GetValue(0) + reader.GetValue(1) + reader.GetValue(2) + reader.GetValue(3);
+                            }
+                            sqlCom.Dispose();
+                            sqlCon.Close();
+                        }
+                    }
+                    msg = ("\nRecord :\n" + output + addBorder(Console.BufferWidth));
+                }
+            }
+            catch (Exception e)
+            {
+                msg = "\nError : \n" + e + "\n" + addBorder(Console.BufferWidth);
+            }
+            return msg;
+        }
+        public string readFromDB()
+        {
+            string msg = "";
+            SqlConnection sqlCon;
+            try
+            {
+                using (sqlCon = new SqlConnection(connString))
+                {
+                    sqlCon.Open();
+                    msg = ("\nConnection opened successfully\n" + addBorder(Console.BufferWidth));
+                    SqlCommand sqlCom;
+                    SqlDataReader reader;
+                    string output = "";
+                    string sql = "SELECT * users_tbl";
+                    using (sqlCom = new SqlCommand(sql, sqlCon))
+                    {
+                        using (reader = sqlCom.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                output = output + reader.GetValue(0) + reader.GetValue(1) + reader.GetValue(2) + reader.GetValue(3);
+                            }
+                            sqlCom.Dispose();
+                            sqlCon.Close();
+                        }
+                    }
+                    msg = ("\nRecords :\n" + output + "\n" + addBorder(Console.BufferWidth) + "\n");
+                }
+            }
+            catch (Exception e)
+            {
+                msg = "\nError : \n" + e + "\n" + addBorder(Console.BufferWidth);
+            }
+            return msg;
+        }
+        public string readFromDBSorted(string column)
+        {
+            string msg = "";
+            SqlConnection sqlCon;
+            try
+            {
+                using (sqlCon = new SqlConnection(connString))
+                {
+                    sqlCon.Open();
+                    msg = ("\nConnection opened successfully\n" + addBorder(Console.BufferWidth));
+                    SqlCommand sqlCom;
+                    SqlDataReader reader;
+                    string output = "";
+                    string sql = "SELECT * users_tbl ORDER BY '" + column + "'";
+                    using (sqlCom = new SqlCommand(sql, sqlCon))
+                    {
+                        using (reader = sqlCom.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                output = output + reader.GetValue(0) + reader.GetValue(1) + reader.GetValue(2) + reader.GetValue(3);
+                            }
+                            sqlCom.Dispose();
+                            sqlCon.Close();
+                        }
+                    }
+                    msg = ("\nRecords :\n" + output + "\n" + addBorder(Console.BufferWidth) + "\n");
+                }
+            }
+            catch (Exception e)
+            {
+                msg = "\nError : \n" + e + "\n" + addBorder(Console.BufferWidth);
+            }
+            return msg;
         }
     }
 }
