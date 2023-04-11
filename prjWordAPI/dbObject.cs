@@ -21,13 +21,18 @@
             Password_Hash = passHasher(password);
             Image_URL = image_URL;
         }
-        private string passHasher(string password)
+        public string passHasher(string password)
         {
+            string hashedPass = "";
             if (password == null) { return "Error : Password empty"; }
             else 
             {
-                var hash = password.GetHashCode();
-                return hash.ToString();
+                char[] hash = password.ToCharArray();
+                foreach (char c in hash)
+                {
+                    hashedPass = hashedPass + ((byte)c);
+                }
+                return hashedPass;
             }
         }
         public string summary()
